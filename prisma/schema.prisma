@@ -13,6 +13,7 @@ datasource db {
 model user {
   id          String            @id @default(auto()) @map("_id") @db.ObjectId
   email       String            @unique
+  password    String
   firstName   String?
   lastName    String?
   social      Json?
@@ -20,7 +21,7 @@ model user {
   courses     courseEnrolment[]
   testResults testResult[]      @relation(name: "results")
   testGraded  testResult[]      @relation(name: "graded")
-  token token[]
+  token       token[]
 }
 
 model course {
@@ -28,7 +29,7 @@ model course {
   name          String
   courseDetails String?
   //relations
-  tests          test[]
+  tests         test[]
   membersIds    String[]          @db.ObjectId
   members       courseEnrolment[]
 }
@@ -74,16 +75,19 @@ model testResult {
 }
 
 model token {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  type TokenType
-  emailToken String? @unique // Only used for short lived email tokens
-  valid Boolean @default(true)
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  type       TokenType
+  emailToken String? // Only used for short lived email tokens
+  apiToken   String?
+  valid      Boolean   @default(true)
   expiration DateTime
   //relation with user model
-  userId String @db.ObjectId
-  user user @relation(fields: [userId], references: [id])
+  userId     String    @db.ObjectId
+  user       user      @relation(fields: [userId], references: [id])
+
+  @@index([apiToken, emailToken])
 }
 
 enum TokenType {

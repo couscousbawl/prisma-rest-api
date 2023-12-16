@@ -1,40 +1,81 @@
-import { Request, Response } from "express";
-import prisma from '../middleware/prisma';
+import { NextFunction, Request, Response } from "express";
+import prisma from '../lib/prisma';
 import email from '../utils/email';
 import { add, compareAsc } from 'date-fns';
 import { TokenType, UserRoles } from '@prisma/client'
+import { StatusCodes } from "http-status-codes";
+import bcrypt from 'bcryptjs';
+import jwt from "../utils/jwt";
 
-const EMAIL_TOKEN_EXPIRATION_MINUTES = 10
+const API_TOKEN_EXPIRATION_MINUTES = 1000
 
 interface LoginInput {
-  email: string
+  email: string,
+  password: string
 }
 
 export default class AuthController {
-    async login(req: Request, res: Response){
-        const { email } = req.body as LoginInput;
-        const emailToken = generateEmailToken();
-        const tokenExpiration = add(new Date(), { minutes: EMAIL_TOKEN_EXPIRATION_MINUTES })
+    async login(req: Request, res: Response, next: NextFunction){
+        const { email, password } = req.body as LoginInput;
+        const tokenExpiration = add(new Date(), { minutes: API_TOKEN_EXPIRATION_MINUTES });
+
+        if (!email || !password) {
+            return next({
+              status: StatusCodes.BAD_REQUEST,
+              message: 'Some required fields are missing',
+            });
+          }
+
+          const user = await prisma.user.findUnique({ where: { email } });
+
+          if (!user) {
+            res.status(404).json({
+                message: "User not Found",
+                email: email
+            });
+            return next({
+              status: StatusCodes.NOT_FOUND,
+              message: 'User not found',
+            });
+          }
+
+          const isValidPassword = await bcrypt.compare(password, user.password);
+
+          if (!isValidPassword) {
+            res.status(401).json({
+                message: "Invalid Password",
+                data: isValidPassword
+            });
+            return next({
+              status: StatusCodes.UNAUTHORIZED,
+              message: 'Invalid password',
+            });
+          }
+
+          const token = jwt.sign({ id: user.id, email: user.email });
 
         try {
             const createdToken = await prisma.token.create({
                 data: {
-                    emailToken,
-                    type: TokenType.EMAIL,
+                    apiToken: token,
+                    type: TokenType.API,
                     expiration: tokenExpiration,
                     user: {
-                        connectOrCreate: {
-                            create: {
-                                email
-                            },
-                            where: {
-                                email
-                            }
+                        connect: {
+                            email: email
+                        }
+                    }
+                },
+                select: {
+                    apiToken: true,
+                    user: {
+                        select: {
+                            email: true
                         }
                     }
                 }
             });
-            //send the email token
+            // //send the email token
             //await sendEmailToken(email, emailToken);
             res.status(201).json({
                 message: "login OK",

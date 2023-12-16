@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
-import prisma from '../middleware/prisma';
+import prisma from '../lib/prisma';
+import bcrypt from 'bcryptjs';
 
 interface UserInput {
     firstName: string
     lastName: string
     email: string
+    password: string
     social: {
         facebook?: string
         twitter?: string
@@ -17,11 +19,13 @@ export default class UserController {
     //create a new user
     async create(req: Request, res: Response) {
         try {
+            const passwordHash = await bcrypt.hash(req.body.password, 10)
             const createdUser = await prisma.user.create({
                 data: {
                     firstName: req.body.firstName,
                     lastName: req.body.lastName,
                     email: req.body.email,
+                    password: passwordHash,
                     social: req.body.social
                 }
             });
