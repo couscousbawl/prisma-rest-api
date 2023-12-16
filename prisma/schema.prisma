@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  email       String            @unique
+  firstName   String?
+  lastName    String?
+  social      Json?
+  //relations
+  courses     courseEnrolment[]
+  testResults testResult[]      @relation(name: "results")
+  testGraded  testResult[]      @relation(name: "graded")
+  token token[]
+}
+
+model course {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  courseDetails String?
+  //relations
+  tests          test[]
+  membersIds    String[]          @db.ObjectId
+  members       courseEnrolment[]
+}
+
+model courseEnrolment {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  crearedAt DateTime  @default(now())
+  role      UserRoles
+  userId    String[]  @unique @db.ObjectId
+  courseId  String[]  @db.ObjectId
+  user      user      @relation(fields: [userId], references: [id])
+  course    course    @relation(fields: [courseId], references: [id])
+
+  @@index([userId, role])
+}
+
+enum UserRoles {
+  STUDENT
+  TEACHER
+}
+
+model test {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  updatedAt   DateTime     @updatedAt
+  name        String
+  date        DateTime
+  courseId    String       @db.ObjectId
+  course      course       @relation(fields: [courseId], references: [id])
+  testResults testResult[]
+}
+
+model testResult {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  result    Int
+  //relations
+  studentId String   @db.ObjectId
+  student   user     @relation(name: "results", fields: [studentId], references: [id])
+  graderId  String   @db.ObjectId
+  gradedBy  user     @relation(name: "graded", fields: [graderId], references: [id])
+  testId    String   @db.ObjectId
+  test      test     @relation(fields: [testId], references: [id])
+}
+
+model token {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  type TokenType
+  emailToken String? @unique // Only used for short lived email tokens
+  valid Boolean @default(true)
+  expiration DateTime
+  //relation with user model
+  userId String @db.ObjectId
+  user user @relation(fields: [userId], references: [id])
+}
+
+enum TokenType {
+  EMAIL // used as a short-lived token sent to the user's email
+  API
+}
