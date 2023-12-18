@@ -1,5 +1,6 @@
 import { Router } from "express";
 import UserController from "../controllers/user.controller";
+import authorize from "../middleware/auth";
 
 class UsersRoutes {
   router = Router();
@@ -13,7 +14,7 @@ class UsersRoutes {
     this.router.post('/create', this.user.create); // create a new user
     this.router.get('/:id', this.user.getUserById); // get a user by ID
     this.router.delete('/:id', this.user.deleteUser); // delete a specific user
-    this.router.put('/:id', this.user.update); // update a specific user
+    this.router.put('/:id', authorize, this.user.update); // update a specific user
     this.router.get('', this.user.getAllUsers); // get all users
   }
 }
