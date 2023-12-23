@@ -79,15 +79,12 @@ model token {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   type       TokenType
-  emailToken String? // Only used for short lived email tokens
-  apiToken   String?
+  emailToken String?   @unique
   valid      Boolean   @default(true)
   expiration DateTime
   //relation with user model
   userId     String    @db.ObjectId
   user       user      @relation(fields: [userId], references: [id])
-
-  @@index([apiToken, emailToken])
 }
 
 enum TokenType {
