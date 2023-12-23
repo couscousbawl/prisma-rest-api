@@ -64,7 +64,14 @@ export default class UserController {
     // get all users
     async getAllUsers(req: Request, res: Response) {
         try {
-            const users = await prisma.user.findMany();
+            const users = await prisma.user.findMany({
+                select: {
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    social: true
+                }
+            });
 
             res.status(201).json({
                 message: "getAllUsers OK",
