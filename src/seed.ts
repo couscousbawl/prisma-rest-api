@@ -20,6 +20,7 @@ async function main() {
           email: 'grace@hey.com',
           firstName: 'Grace',
           lastName: 'Bell',
+          password: '',
           social: {
             facebook: 'gracebell',
             twitter: 'therealgracebell',
@@ -69,6 +70,7 @@ async function main() {
           email: 'devi@prisma.io',
           firstName: 'Shakuntala',
           lastName: 'Devi',
+          password: '',
           courses: {
             create: {
               role: 'STUDENT',
@@ -85,6 +87,7 @@ async function main() {
           email: 'david@prisma.io',
           firstName: 'David',
           lastName: 'Deutsch',
+          password: '',
           courses: {
             create: {
               role: 'STUDENT',
