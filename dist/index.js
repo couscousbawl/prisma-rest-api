@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = __importDefault(require("./routes"));
-const prisma_1 = __importDefault(require("./middleware/prisma"));
 class Server {
     constructor(app) {
         this.config(app);
@@ -19,7 +18,6 @@ class Server {
         app.use((0, cors_1.default)(corsOptions));
         app.use(express_1.default.json());
         app.use(express_1.default.urlencoded({ extended: true }));
-        app.use(prisma_1.default);
     }
 }
 exports.default = Server;
