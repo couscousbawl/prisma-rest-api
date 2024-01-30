@@ -13,7 +13,7 @@ class Server {
     }
     config(app) {
         const corsOptions = {
-            origin: "http://0.0.0.0:" + process.env.PORT
+            origin: "https://0.0.0.0:" + process.env.PORT
         };
         app.use((0, cors_1.default)(corsOptions));
         app.use(express_1.default.json());

@@ -12,7 +12,7 @@ const app = (0, express_1.default)();
 const server = new index_1.default(app);
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app
-    .listen(PORT, "0.0.0.0", function () {
+    .listen(PORT, function () {
     console.log(`Server is running on port ${PORT}.`);
 })
     .on("error", (err) => {
